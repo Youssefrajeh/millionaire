@@ -1,0 +1,138 @@
+:root {
+  --bg1: #0b0b3b;
+  --bg2: #1d1170;
+  --gold: #f5c542;
+  --gold2: #ffdf7a;
+  --line: #4a6cff;
+  --text: #fff;
+  --muted: #aab3e6;
+  --ok: #19b85c;
+  --bad: #e03b3b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: "Segoe UI", Tahoma, "Noto Kufi Arabic", sans-serif;
+  color: var(--text);
+  background: radial-gradient(ellipse at top, var(--bg2), var(--bg1) 70%) fixed;
+  overflow-x: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+
+.screen { display: none; min-height: 100vh; padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); }
+.screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; }
+
+/* البداية */
+.logo h1 { font-size: clamp(28px, 7vw, 46px); color: var(--gold); text-shadow: 0 0 20px rgba(245,197,66,.5); margin-top: 12px; }
+.sub { color: var(--muted); margin-top: 6px; }
+.logo-ring {
+  width: 120px; height: 120px; margin: 0 auto; border-radius: 50%;
+  display: grid; place-items: center; font-size: 56px;
+  background: radial-gradient(circle, #2b2196, #0b0b3b);
+  border: 3px solid var(--gold); box-shadow: 0 0 30px rgba(245,197,66,.45);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.logo-ring.big { width: 150px; height: 150px; font-size: 72px; }
+@keyframes pulse { 50% { box-shadow: 0 0 50px rgba(245,197,66,.8); } }
+.muted { color: var(--muted); font-size: 14px; }
+.rules p { margin: 4px 0; }
+.error { color: #ff9a9a; max-width: 420px; }
+
+.btn {
+  border: 2px solid var(--gold); color: var(--text); background: transparent;
+  padding: 14px 40px; border-radius: 40px; font-size: 18px; font-weight: 700; transition: .2s;
+}
+.btn.gold { background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1240; }
+.btn.gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,197,66,.4); }
+.btn.ghost { border-color: var(--line); }
+.btn.danger { border-color: var(--bad); }
+.btn.small { padding: 8px 16px; font-size: 14px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* اللعب */
+#gameScreen.active { justify-content: flex-start; }
+.topbar { width: 100%; max-width: 1100px; display: flex; align-items: center; gap: 10px; }
+.lifelines { display: flex; gap: 10px; margin-inline-end: auto; }
+.ll {
+  width: 64px; height: 44px; border-radius: 50%; border: 2px solid var(--line);
+  background: #14105a; color: #fff; font-weight: 700; font-size: 16px;
+}
+.ll:disabled { opacity: .3; text-decoration: line-through; cursor: not-allowed; }
+#ladderToggle { display: none; }
+
+.game-body { width: 100%; max-width: 1100px; display: flex; gap: 20px; flex: 1; align-items: flex-start; margin-top: 10px; }
+.stage { flex: 1; display: flex; flex-direction: column; gap: 18px; align-items: stretch; }
+.status { display: flex; justify-content: space-between; align-items: center; color: var(--muted); }
+.prize-tag { color: var(--gold); font-weight: 700; font-size: 18px; }
+.timer {
+  width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  border: 3px solid var(--line); font-size: 20px; font-weight: 700; color: #fff;
+}
+.timer.low { border-color: var(--bad); color: #ff9a9a; animation: pulse 1s infinite; }
+
+.question-box {
+  border: 2px solid var(--line); border-radius: 18px; padding: 26px 20px;
+  background: linear-gradient(180deg, #1a1475, #0e0b45); font-size: clamp(18px, 4.2vw, 24px); line-height: 1.6;
+  min-height: 110px; display: grid; place-items: center;
+}
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.answer {
+  display: flex; gap: 8px; align-items: center; text-align: start;
+  padding: 16px 18px; border-radius: 40px; border: 2px solid var(--line);
+  background: linear-gradient(180deg, #1a1475, #0e0b45); color: #fff; font-size: 17px; transition: .2s;
+}
+.answer .letter { color: var(--gold); font-weight: 700; }
+.answer:hover:not(.gone) { border-color: var(--gold); }
+.answer.selected { background: linear-gradient(180deg, #ffb347, #e08a00); color: #1b1240; border-color: var(--gold); }
+.answer.selected .letter { color: #1b1240; }
+.answer.correct { background: linear-gradient(180deg, #2fe07c, var(--ok)); border-color: #9cffc5; color: #072; animation: blink .4s 3; }
+.answer.correct .letter { color: #062; }
+.answer.wrong { background: linear-gradient(180deg, #ff6b6b, var(--bad)); border-color: #ffb3b3; }
+.answer.gone { visibility: hidden; }
+@keyframes blink { 50% { filter: brightness(1.5); } }
+
+.message { min-height: 26px; font-size: 18px; text-align: center; }
+#nextBtn { align-self: center; }
+
+/* سلّم الجوائز */
+.ladder {
+  width: 220px; border: 2px solid var(--line); border-radius: 16px; padding: 10px;
+  background: rgba(10, 8, 50, .85); display: flex; flex-direction: column; gap: 2px;
+}
+.rung { display: flex; justify-content: space-between; padding: 5px 12px; border-radius: 20px; font-size: 15px; color: #e8a33a; }
+.rung .n { opacity: .7; }
+.rung.safe { color: #fff; font-weight: 700; }
+.rung.done { opacity: .5; }
+.rung.current { background: var(--gold); color: #1b1240; opacity: 1; font-weight: 700; }
+
+/* النهاية */
+.win-label { color: var(--muted); }
+.win-amount { font-size: clamp(40px, 12vw, 72px); color: var(--gold); font-weight: 800; text-shadow: 0 0 25px rgba(245,197,66,.6); }
+
+/* النافذة */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: grid; place-items: center; z-index: 10; padding: 20px; }
+.modal[hidden] { display: none; }
+.modal-card {
+  width: 100%; max-width: 380px; background: #14105a; border: 2px solid var(--gold);
+  border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px; text-align: center;
+}
+.modal-card h3 { color: var(--gold); }
+.bar-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.bl { width: 22px; color: var(--gold); font-weight: 700; }
+.bar { flex: 1; height: 18px; background: #0b0b3b; border-radius: 10px; overflow: hidden; }
+.fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); transition: width 1s; }
+.bp { width: 44px; text-align: left; }
+.friend { line-height: 1.8; font-size: 17px; }
+
+/* الموبايل */
+@media (max-width: 760px) {
+  .answers { grid-template-columns: 1fr; }
+  #ladderToggle { display: inline-block; }
+  .ladder {
+    display: none; position: fixed; top: 70px; left: 12px; z-index: 5; width: 200px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  .ladder.open { display: flex; }
+  .ll { width: 54px; height: 40px; font-size: 14px; }
+  .topbar .btn.small { padding: 6px 12px; }
+}
