@@ -1,6 +1,6 @@
 // Service Worker — يخلّي اللعبة تشتغل بدون إنترنت
 // غيّر رقم النسخة كل ما تعدّل الملفات، لحتى ينزل التحديث
-const CACHE = "millionaire-v3";
+const CACHE = "millionaire-v4";
 const FILES = [
   "./",
   "./index.html",

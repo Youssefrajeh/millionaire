@@ -39,6 +39,11 @@ const sound = {
 // ---------- أدوات ----------
 const money = (n) => n.toLocaleString("en-US") + "$";
 const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function setMessage(text, kind = "") {
+  const m = $("#message");
+  m.textContent = text;
+  m.className = "message" + (kind ? " " + kind : "");
+}
 function show(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   $(id).classList.add("active");
@@ -139,7 +144,7 @@ function nextQuestion() {
   $("#qNumber").textContent = `السؤال ${state.level + 1} من 15`;
   $("#qPrize").textContent = money(lv.prize);
   $("#questionText").textContent = state.current.q;
-  $("#message").textContent = "";
+  setMessage("");
   $("#nextBtn").hidden = true;
   $("#walkBtn").disabled = false;
 
@@ -148,7 +153,7 @@ function nextQuestion() {
   state.current.options.forEach((opt, i) => {
     const b = document.createElement("button");
     b.className = "answer";
-    b.innerHTML = `<span class="letter">${LETTERS[i]}:</span><span class="txt"></span>`;
+    b.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="txt"></span>`;
     b.querySelector(".txt").textContent = opt;
     b.onclick = () => choose(i, b);
     box.appendChild(b);
@@ -160,13 +165,15 @@ function nextQuestion() {
 function startTimer(sec) {
   clearInterval(state.timer);
   const t = $("#timer");
-  if (!sec) { t.textContent = "∞"; t.classList.remove("low"); return; }
+  if (!sec) { $("#timerText").textContent = "∞"; t.style.setProperty("--p", 1); t.classList.remove("low"); return; }
   state.timeLeft = sec;
-  t.textContent = sec;
+  $("#timerText").textContent = sec;
+  t.style.setProperty("--p", 1);
   t.classList.remove("low");
   state.timer = setInterval(() => {
     state.timeLeft--;
-    t.textContent = state.timeLeft;
+    $("#timerText").textContent = state.timeLeft;
+    t.style.setProperty("--p", state.timeLeft / sec);
     if (state.timeLeft <= 10) { t.classList.add("low"); sound.tick(); }
     if (state.timeLeft <= 0) {
       clearInterval(state.timer);
@@ -180,7 +187,7 @@ function timeUp() {
   state.locked = true;
   revealCorrect();
   sound.wrong();
-  $("#message").textContent = "⏰ انتهى الوقت!";
+  setMessage("انتهى الوقت", "bad");
   setTimeout(() => endGame(false), 2200);
 }
 
@@ -191,7 +198,7 @@ function choose(i, btn) {
   $("#walkBtn").disabled = true;
   sound.select();
   btn.classList.add("selected");
-  $("#message").textContent = "إجابة نهائية؟ … لنرَ";
+  setMessage("إجابة نهائية… لنرَ");
 
   setTimeout(() => {
     const ok = i === state.current.answer;
@@ -199,17 +206,17 @@ function choose(i, btn) {
     if (ok) {
       sound.correct();
       if (state.level === 14) {
-        $("#message").textContent = "🎉 مبروك! ربحت المليون!";
+        setMessage("مبروك! ربحت المليون", "ok");
         setTimeout(() => endGame(true, true), 2200);
         return;
       }
-      $("#message").textContent = `✅ إجابة صحيحة! ربحت ${money(DATA.levels[state.level].prize)}`;
+      setMessage(`إجابة صحيحة — ربحت ${money(DATA.levels[state.level].prize)}`, "ok");
       $("#nextBtn").hidden = false;
     } else {
       btn.classList.remove("selected");
       btn.classList.add("wrong");
       sound.wrong();
-      $("#message").textContent = "❌ إجابة خاطئة";
+      setMessage("إجابة خاطئة", "bad");
       setTimeout(() => endGame(false), 2400);
     }
   }, 1600);
@@ -241,22 +248,22 @@ function walkAway() {
   state.locked = true;
   revealCorrect();
   const amount = currentWinnings();
-  $("#message").textContent = "انسحبت. هذه كانت الإجابة الصحيحة.";
+  setMessage("انسحبت. هذه كانت الإجابة الصحيحة.");
   setTimeout(() => endGame(true, false, amount), 1800);
 }
 
 function endGame(won, million = false, walked = null) {
   clearInterval(state.timer);
-  let amount, title, emoji, note;
+  let amount, title, eyebrow, note;
   if (million) {
-    amount = 1000000; title = "أنت مليونير!"; emoji = "🏆"; note = "أجبت عن الأسئلة الخمسة عشر كلها.";
+    amount = 1000000; title = "أنت مليونير!"; eyebrow = "إنجاز كامل"; note = "أجبت عن الأسئلة الخمسة عشر كلها.";
   } else if (walked !== null) {
-    amount = walked; title = "انسحاب ذكي"; emoji = "🤝"; note = `انسحبت عند السؤال ${state.level + 1}.`;
+    amount = walked; title = "انسحاب ذكي"; eyebrow = "النتيجة النهائية"; note = `انسحبت عند السؤال ${state.level + 1}.`;
   } else {
-    amount = guaranteed(); title = "انتهت اللعبة"; emoji = amount ? "💵" : "😅";
+    amount = guaranteed(); title = "انتهت اللعبة"; eyebrow = "النتيجة النهائية";
     note = amount ? "رجعت بالمبلغ المضمون." : "لم تصل إلى أي مبلغ مضمون هذه المرة.";
   }
-  $("#endEmoji").textContent = emoji;
+  $("#endEyebrow").textContent = eyebrow;
   $("#endTitle").textContent = title;
   $("#endAmount").textContent = money(amount);
   $("#endNote").textContent = note;
@@ -308,7 +315,7 @@ function askAudience() {
       <div class="bar"><div class="fill" style="width:${votes[i]}%"></div></div>
       <span class="bp">${votes[i]}%</span>
     </div>`).join("");
-  openModal("👥 رأي الجمهور", body);
+  openModal("رأي الجمهور", body);
 }
 
 function phoneFriend() {
@@ -326,7 +333,7 @@ function phoneFriend() {
   const msg = confident
     ? `"متأكد تقريباً… الجواب هو <b>${LETTERS[pickI]}: ${escapeHtml(text)}</b>"`
     : `"والله مو متأكد كتير… بس إذا بدك رأيي بختار <b>${LETTERS[pickI]}: ${escapeHtml(text)}</b>"`;
-  openModal("📞 اتصال بصديق", `<p class="friend">${msg}</p>`);
+  openModal("اتصال بصديق", `<p class="friend">${msg}</p>`);
 }
 
 function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
